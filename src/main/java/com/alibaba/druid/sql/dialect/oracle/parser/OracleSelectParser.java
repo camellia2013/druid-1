@@ -43,6 +43,11 @@ public class OracleSelectParser extends SQLSelectParser {
     public SQLSelect select() {
         SQLSelect select = new SQLSelect();
 
+        List<String> comments = null;
+        if (lexer.isKeepComments() && lexer.hasComment()) {
+            comments = lexer.readAndResetComments();
+        }
+
         if (lexer.token() == Token.WITH) {
             SQLWithSubqueryClause with = this.parseWith();
             select.setWithSubQuery(with);
@@ -155,6 +160,10 @@ public class OracleSelectParser extends SQLSelectParser {
             }
 
             select.setRestriction(restriction);
+        }
+
+        if (comments != null) {
+            select.addBeforeComment(comments);
         }
 
         return select;

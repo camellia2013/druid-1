@@ -54,6 +54,7 @@ public class SQLSelectStatement extends SQLStatementImpl {
     public void setSelect(SQLSelect select) {
         if (select != null) {
             select.setParent(this);
+            this.getAttributes().putAll(select.getAttributes());
         }
         this.select = select;
     }
