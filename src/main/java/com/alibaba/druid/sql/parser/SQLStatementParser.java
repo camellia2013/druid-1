@@ -219,6 +219,11 @@ public class SQLStatementParser extends SQLParser {
                     continue;
                 }
                 case UPDATE: {
+                    List<String> comments = null;
+                    if (lexer.isKeepComments() && lexer.hasComment()) {
+                        comments = lexer.readAndResetComments();
+                    }
+
                     //FOR ADS
                     Lexer.SavePoint savePoint = lexer.mark();
                     lexer.nextToken();
@@ -234,6 +239,9 @@ public class SQLStatementParser extends SQLParser {
                             stmt.setFormSelect(fromSelect);
                             stmt.setToSelect(toSelect);
 
+                            if (comments != null) {
+                                stmt.addBeforeComment(comments);
+                            }
                             statementList.add(stmt);
                             continue;
                         }
@@ -242,6 +250,10 @@ public class SQLStatementParser extends SQLParser {
                     lexer.reset(savePoint);
                     SQLStatement stmt = parseUpdateStatement();
                     stmt.setParent(parent);
+
+                    if (comments != null) {
+                        stmt.addBeforeComment(comments);
+                    }
                     statementList.add(stmt);
                     continue;
                 }

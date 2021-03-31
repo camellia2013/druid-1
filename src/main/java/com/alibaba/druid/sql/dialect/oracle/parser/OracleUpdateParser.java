@@ -23,6 +23,9 @@ import com.alibaba.druid.sql.parser.ParserException;
 import com.alibaba.druid.sql.parser.SQLStatementParser;
 import com.alibaba.druid.sql.parser.Token;
 
+import java.util.List;
+
+
 public class OracleUpdateParser extends SQLStatementParser {
 
     public OracleUpdateParser(String sql) {
@@ -35,7 +38,12 @@ public class OracleUpdateParser extends SQLStatementParser {
 
     public OracleUpdateStatement parseUpdateStatement() {
         OracleUpdateStatement update = new OracleUpdateStatement();
-        
+
+        List<String> comments = null;
+        if (lexer.isKeepComments() && lexer.hasComment()) {
+            comments = lexer.readAndResetComments();
+        }
+
         if (lexer.token() == Token.UPDATE) {
             lexer.nextToken();
 
@@ -60,6 +68,10 @@ public class OracleUpdateParser extends SQLStatementParser {
         parseReturn(update);
 
         parseErrorLoging(update);
+
+        if (comments != null) {
+            update.addBeforeComment(comments);
+        }
 
         return update;
     }
