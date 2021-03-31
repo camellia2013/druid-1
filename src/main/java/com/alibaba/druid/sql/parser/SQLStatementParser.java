@@ -4428,6 +4428,11 @@ public class SQLStatementParser extends SQLParser {
     }
 
     public SQLCommentStatement parseComment() {
+        List<String> comments = null;
+        if (lexer.isKeepComments() && lexer.hasComment()) {
+            comments = lexer.readAndResetComments();
+        }
+
         accept(Token.COMMENT);
         SQLCommentStatement stmt = new SQLCommentStatement();
 
@@ -4446,6 +4451,9 @@ public class SQLStatementParser extends SQLParser {
         accept(Token.IS);
         stmt.setComment(this.exprParser.expr());
 
+        if (comments != null) {
+            stmt.addBeforeComment(comments);
+        }
         return stmt;
     }
 
