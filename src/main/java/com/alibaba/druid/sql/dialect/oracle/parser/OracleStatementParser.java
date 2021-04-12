@@ -389,12 +389,12 @@ public class OracleStatementParser extends SQLStatementParser {
                 statementList.add(this.parseGrant());
                 continue;
             }
-            
+
             if (lexer.token() == Token.REVOKE) {
                 statementList.add(this.parseRevoke());
                 continue;
             }
-            
+
             if (lexer.token() == Token.COMMENT) {
                 statementList.add(this.parseComment());
                 continue;
@@ -441,6 +441,11 @@ public class OracleStatementParser extends SQLStatementParser {
             }
 
             if (lexer.token() == Token.COMMIT) {
+                List<String> comments = null;
+                if (lexer.isKeepComments() && lexer.hasComment()) {
+                    comments = lexer.readAndResetComments();
+                }
+
                 lexer.nextToken();
 
                 if (lexer.identifierEquals("WORK")) {
@@ -476,6 +481,9 @@ public class OracleStatementParser extends SQLStatementParser {
                     }
                 }
 
+                if (comments != null) {
+                    stmt.addBeforeComment(comments);
+                }
                 statementList.add(stmt);
                 continue;
             }
@@ -579,7 +587,7 @@ public class OracleStatementParser extends SQLStatementParser {
                     statementList.add(stmt);
                     continue;
                 }
-                
+
                 if (lexer.token() == Token.PROCEDURE) {
                     SQLDropProcedureStatement stmt = parseDropProcedure(false);
                     stmt.setParent(parent);
@@ -624,7 +632,7 @@ public class OracleStatementParser extends SQLStatementParser {
                 statementList.add(stmt);
                 continue;
             }
-            
+
             if (lexer.token() == Token.OPEN) {
                 SQLStatement stmt = this.parseOpen();
                 stmt.setParent(parent);
@@ -1243,6 +1251,11 @@ public class OracleStatementParser extends SQLStatementParser {
     }
 
     public SQLStatement parserAlter() {
+        List<String> comments = null;
+        if (lexer.isKeepComments() && lexer.hasComment()) {
+            comments = lexer.readAndResetComments();
+        }
+
         Lexer.SavePoint savePoint = lexer.mark();
         accept(Token.ALTER);
         if (lexer.token() == Token.SESSION) {
@@ -1254,6 +1267,10 @@ public class OracleStatementParser extends SQLStatementParser {
                 parseAssignItems(stmt.getItems(), stmt);
             } else {
                 throw new ParserException("TODO : " + lexer.info());
+            }
+
+            if (comments != null) {
+                stmt.addBeforeComment(comments);
             }
             return stmt;
         } else if (lexer.token() == Token.PROCEDURE) {
@@ -1271,12 +1288,25 @@ public class OracleStatementParser extends SQLStatementParser {
                 stmt.setReuseSettings(true);
             }
 
+            if (comments != null) {
+                stmt.addBeforeComment(comments);
+            }
             return stmt;
         } else if (lexer.token() == Token.TABLE) {
-            return parseAlterTable();
+            SQLStatement stmt = parseAlterTable();
+
+            if (comments != null) {
+                stmt.addBeforeComment(comments);
+            }
+            return stmt;
         } else if (lexer.token() == Token.INDEX) {
             lexer.reset(savePoint);
-            return parseAlterIndex();
+            SQLStatement stmt = parseAlterIndex();
+
+            if (comments != null) {
+                stmt.addBeforeComment(comments);
+            }
+            return stmt;
         } else if (lexer.token() == Token.TRIGGER) {
             lexer.nextToken();
             OracleAlterTriggerStatement stmt = new OracleAlterTriggerStatement();
@@ -1299,6 +1329,9 @@ public class OracleStatementParser extends SQLStatementParser {
                 break;
             }
 
+            if (comments != null) {
+                stmt.addBeforeComment(comments);
+            }
             return stmt;
         } else if (lexer.identifierEquals(FnvHash.Constants.SYNONYM)) {
             lexer.nextToken();
@@ -1322,6 +1355,9 @@ public class OracleStatementParser extends SQLStatementParser {
                 break;
             }
 
+            if (comments != null) {
+                stmt.addBeforeComment(comments);
+            }
             return stmt;
         } else if (lexer.token() == Token.VIEW) {
             lexer.nextToken();
@@ -1345,6 +1381,9 @@ public class OracleStatementParser extends SQLStatementParser {
                 break;
             }
 
+            if (comments != null) {
+                stmt.addBeforeComment(comments);
+            }
             return stmt;
         } else if (lexer.token() == Token.TABLESPACE) {
             lexer.nextToken();
@@ -1411,16 +1450,34 @@ public class OracleStatementParser extends SQLStatementParser {
                 throw new ParserException("TODO : " + lexer.info());
             }
 
+            if (comments != null) {
+                stmt.addBeforeComment(comments);
+            }
             return stmt;
         } else if (lexer.token() == Token.FUNCTION) {
             lexer.reset(savePoint);
-            return parseAlterFunction();
+            SQLStatement stmt = parseAlterFunction();
+
+            if (comments != null) {
+                stmt.addBeforeComment(comments);
+            }
+            return stmt;
         } else if (lexer.token() == Token.SEQUENCE) {
             lexer.reset(savePoint);
-            return parseAlterSequence();
+            SQLStatement stmt = parseAlterSequence();
+
+            if (comments != null) {
+                stmt.addBeforeComment(comments);
+            }
+            return stmt;
         } else if (lexer.identifierEquals(FnvHash.Constants.TYPE)) {
             lexer.reset(savePoint);
-            return parseAlterType();
+            SQLStatement stmt = parseAlterType();
+
+            if (comments != null) {
+                stmt.addBeforeComment(comments);
+            }
+            return stmt;
         }
 
         throw new ParserException("TODO : " + lexer.info());
@@ -2110,6 +2167,11 @@ public class OracleStatementParser extends SQLStatementParser {
     }
 
     public OracleStatement parseInsert() {
+        List<String> comments = null;
+        if (lexer.isKeepComments() && lexer.hasComment()) {
+            comments = lexer.readAndResetComments();
+        }
+
         if (lexer.token() == Token.LPAREN) {
             OracleInsertStatement stmt = new OracleInsertStatement();
             parseInsert0(stmt, false);
@@ -2117,6 +2179,9 @@ public class OracleStatementParser extends SQLStatementParser {
             stmt.setReturning(parseReturningClause());
             stmt.setErrorLogging(parseErrorLoggingClause());
 
+            if (comments != null) {
+                stmt.addBeforeComment(comments);
+            }
             return stmt;
         }
 
@@ -2135,11 +2200,17 @@ public class OracleStatementParser extends SQLStatementParser {
             stmt.setReturning(parseReturningClause());
             stmt.setErrorLogging(parseErrorLoggingClause());
 
+            if (comments != null) {
+                stmt.addBeforeComment(comments);
+            }
             return stmt;
         }
 
         OracleMultiInsertStatement stmt = parseMultiInsert();
         stmt.setHints(hints);
+        if (comments != null) {
+            stmt.addBeforeComment(comments);
+        }
         return stmt;
     }
 
@@ -2278,6 +2349,11 @@ public class OracleStatementParser extends SQLStatementParser {
     }
 
     public OracleDeleteStatement parseDeleteStatement() {
+        List<String> comments = null;
+        if (lexer.isKeepComments() && lexer.hasComment()) {
+            comments = lexer.readAndResetComments();
+        }
+
         OracleDeleteStatement deleteStatement = new OracleDeleteStatement();
 
         if (lexer.token() == Token.DELETE) {
@@ -2329,6 +2405,9 @@ public class OracleStatementParser extends SQLStatementParser {
             throw new ParserException("TODO. " + lexer.info());
         }
 
+        if (comments != null) {
+            deleteStatement.addBeforeComment(comments);
+        }
         return deleteStatement;
     }
 
@@ -2362,7 +2441,7 @@ public class OracleStatementParser extends SQLStatementParser {
                 lexer.nextToken();
                 accept(Token.BY);
                 dbLink.setPassword(lexer.stringVal());
-                
+
                 if (lexer.token() == Token.IDENTIFIER) {
                     lexer.nextToken();
                 } else {
@@ -2391,6 +2470,11 @@ public class OracleStatementParser extends SQLStatementParser {
     }
 
     public OracleCreateIndexStatement parseCreateIndex(boolean acceptCreate) {
+        List<String> comments = null;
+        if (lexer.isKeepComments() && lexer.hasComment()) {
+            comments = lexer.readAndResetComments();
+        }
+
         if (acceptCreate) {
             accept(Token.CREATE);
         }
@@ -2558,6 +2642,10 @@ public class OracleStatementParser extends SQLStatementParser {
             } else {
                 break;
             }
+        }
+
+        if (comments != null) {
+            stmt.addBeforeComment(comments);
         }
         return stmt;
     }

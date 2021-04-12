@@ -166,20 +166,20 @@ public class SQLStatementParser extends SQLParser {
                     }
                     return;
                 case SEMI: {
-                    int line0 = lexer.getLine();
+                    // int line0 = lexer.getLine();
                     lexer.nextToken();
-                    int line1 = lexer.getLine();
+                    // int line1 = lexer.getLine();
 
                     if(statementList.size() > 0) {
                         SQLStatement lastStmt = statementList.get(statementList.size() - 1);
                         lastStmt.setAfterSemi(true);
 
-                        if (lexer.isKeepComments()) {
-                            SQLStatement stmt = statementList.get(statementList.size() - 1);
-                            if (line1 - line0 <= 1) {
-                                stmt.addAfterComment(lexer.readAndResetComments());
-                            }
-                        }
+                        // if (lexer.isKeepComments()) {
+                        //     SQLStatement stmt = statementList.get(statementList.size() - 1);
+                        //     if (line1 - line0 <= 1) {
+                        //         stmt.addAfterComment(lexer.readAndResetComments());
+                        //     }
+                        // }
                     }
 
                     semi = true;
@@ -1247,6 +1247,11 @@ public class SQLStatementParser extends SQLParser {
     }
 
     public SQLGrantStatement parseGrant() {
+        List<String> comments = null;
+        if (lexer.isKeepComments() && lexer.hasComment()) {
+            comments = lexer.readAndResetComments();
+        }
+
         accept(Token.GRANT);
         SQLGrantStatement stmt = new SQLGrantStatement(getDbType());
 
@@ -1387,6 +1392,9 @@ public class SQLStatementParser extends SQLParser {
             }
         }
 
+        if (comments != null) {
+            stmt.addBeforeComment(comments);
+        }
         return stmt;
     }
 
@@ -1674,6 +1682,11 @@ public class SQLStatementParser extends SQLParser {
     }
 
     public SQLRevokeStatement parseRevoke() {
+        List<String> comments = null;
+        if (lexer.isKeepComments() && lexer.hasComment()) {
+            comments = lexer.readAndResetComments();
+        }
+
         accept(Token.REVOKE);
 
         SQLRevokeStatement stmt = new SQLRevokeStatement(dbType);
@@ -1750,6 +1763,9 @@ public class SQLStatementParser extends SQLParser {
             }
         }
 
+        if (comments != null) {
+            stmt.addBeforeComment(comments);
+        }
         return stmt;
     }
 
@@ -3222,13 +3238,13 @@ public class SQLStatementParser extends SQLParser {
     }
 
     public SQLStatement parseCreate() {
-        char markChar = lexer.current();
-        int markBp = lexer.bp();
-
         List<String> comments = null;
         if (lexer.isKeepComments() && lexer.hasComment()) {
             comments = lexer.readAndResetComments();
         }
+
+        char markChar = lexer.current();
+        int markBp = lexer.bp();
 
         accept(Token.CREATE);
 
@@ -3280,10 +3296,20 @@ public class SQLStatementParser extends SQLParser {
                 if (nonclustered) {
                     createIndex.setType("NONCLUSTERED");
                 }
+
+                if (comments != null) {
+                    createIndex.addBeforeComment(comments);
+                }
                 return createIndex;
             }
-            case SEQUENCE:
-                return parseCreateSequence(false);
+            case SEQUENCE: {
+                SQLStatement stmt = parseCreateSequence(false);
+
+                if (comments != null) {
+                    stmt.addBeforeComment(comments);
+                }
+                return stmt;
+            }
             case DATABASE: {
                 lexer.nextToken();
                 if (lexer.identifierEquals("LINK")) {
@@ -3296,16 +3322,19 @@ public class SQLStatementParser extends SQLParser {
 
                 if (comments != null) {
                     stmt.addBeforeComment(comments);
-                    comments = null;
                 }
-
                 return stmt;
             }
             case SCHEMA: {
                 lexer.nextToken();
                 if (lexer.identifierEquals("LINK")) {
                     lexer.reset(markBp, markChar, Token.CREATE);
-                    return parseCreateDbLink();
+                    SQLStatement stmt = parseCreateDbLink();
+
+                    if (comments != null) {
+                        stmt.addBeforeComment(comments);
+                    }
+                    return stmt;
                 }
 
                 lexer.reset(markBp, markChar, Token.CREATE);
@@ -3313,18 +3342,25 @@ public class SQLStatementParser extends SQLParser {
 
                 if (comments != null) {
                     stmt.addBeforeComment(comments);
-                    comments = null;
                 }
-
                 return stmt;
             }
-            case USER:
+            case USER: {
                 lexer.reset(markBp, markChar, Token.CREATE);
-                return parseCreateUser();
+                SQLStatement stmt = parseCreateUser();
+
+                if (comments != null) {
+                    stmt.addBeforeComment(comments);
+                }
+                return stmt;
+            }
             case FUNCTION: {
                 lexer.reset(markBp, markChar, Token.CREATE);
-                SQLStatement createFunct = this.parseCreateFunction();
-                SQLStatement stmt = createFunct;
+                SQLStatement stmt = this.parseCreateFunction();
+
+                if (comments != null) {
+                    stmt.addBeforeComment(comments);
+                }
                 return stmt;
             }
             default:
@@ -3337,42 +3373,82 @@ public class SQLStatementParser extends SQLParser {
                     }
                     if (lexer.token == Token.PROCEDURE) {
                         lexer.reset(markBp, markChar, Token.CREATE);
-                        return parseCreateProcedure();
+                        SQLStatement stmt = parseCreateProcedure();
+
+                        if (comments != null) {
+                            stmt.addBeforeComment(comments);
+                        }
+                        return stmt;
                     }
 
                     if (lexer.token == Token.VIEW) {
                         lexer.reset(markBp, markChar, Token.CREATE);
-                        return parseCreateView();
+                        SQLStatement stmt = parseCreateView();
+
+                        if (comments != null) {
+                            stmt.addBeforeComment(comments);
+                        }
+                        return stmt;
                     }
 
                     if (lexer.token == Token.TRIGGER) {
                         lexer.reset(markBp, markChar, Token.CREATE);
-                        return parseCreateTrigger();
+                        SQLStatement stmt = parseCreateTrigger();
+
+                        if (comments != null) {
+                            stmt.addBeforeComment(comments);
+                        }
+                        return stmt;
                     }
 
                     if (lexer.token == Token.FUNCTION) {
                         lexer.reset(markBp, markChar, Token.CREATE);
-                        return parseCreateFunction();
+                        SQLStatement stmt = parseCreateFunction();
+
+                        if (comments != null) {
+                            stmt.addBeforeComment(comments);
+                        }
+                        return stmt;
                     }
 
                     if (lexer.identifierEquals(FnvHash.Constants.PACKAGE)) {
                         lexer.reset(markBp, markChar, Token.CREATE);
-                        return parseCreatePackage();
+                        SQLStatement stmt = parseCreatePackage();
+
+                        if (comments != null) {
+                            stmt.addBeforeComment(comments);
+                        }
+                        return stmt;
                     }
 
                     if (lexer.identifierEquals(FnvHash.Constants.TYPE)) {
                         lexer.reset(markBp, markChar, Token.CREATE);
-                        return parseCreateType();
+                        SQLStatement stmt = parseCreateType();
+
+                        if (comments != null) {
+                            stmt.addBeforeComment(comments);
+                        }
+                        return stmt;
                     }
 
                     if (lexer.identifierEquals(FnvHash.Constants.PUBLIC)) {
                         lexer.reset(markBp, markChar, Token.CREATE);
-                        return parseCreateSynonym();
+                        SQLStatement stmt = parseCreateSynonym();
+
+                        if (comments != null) {
+                            stmt.addBeforeComment(comments);
+                        }
+                        return stmt;
                     }
 
                     if (lexer.identifierEquals(FnvHash.Constants.SYNONYM)) {
                         lexer.reset(markBp, markChar, Token.CREATE);
-                        return parseCreateSynonym();
+                        SQLStatement stmt = parseCreateSynonym();
+
+                        if (comments != null) {
+                            stmt.addBeforeComment(comments);
+                        }
+                        return stmt;
                     }
 
                     // lexer.reset(mark_bp, mark_ch, Token.CREATE);
@@ -3381,58 +3457,132 @@ public class SQLStatementParser extends SQLParser {
                     lexer.nextToken();
                     if (lexer.identifierEquals("SYNONYM")) {
                         lexer.reset(markBp, markChar, Token.CREATE);
-                        return parseCreateSynonym();
+                        SQLStatement stmt = parseCreateSynonym();
+
+                        if (comments != null) {
+                            stmt.addBeforeComment(comments);
+                        }
+                        return stmt;
                     } else {
                         lexer.reset(markBp, markChar, Token.CREATE);
-                        return parseCreateDbLink();
+                        SQLStatement stmt = parseCreateDbLink();
+
+                        if (comments != null) {
+                            stmt.addBeforeComment(comments);
+                        }
+                        return stmt;
                     }
                 } else if (lexer.identifierEquals("SHARE")) {
                     lexer.reset(markBp, markChar, Token.CREATE);
-                    return parseCreateDbLink();
+                    SQLStatement stmt = parseCreateDbLink();
+
+                    if (comments != null) {
+                        stmt.addBeforeComment(comments);
+                    }
+                    return stmt;
                 } else if (lexer.identifierEquals("SYNONYM")) {
                     lexer.reset(markBp, markChar, Token.CREATE);
-                    return parseCreateSynonym();
+                    SQLStatement stmt = parseCreateSynonym();
+
+                    if (comments != null) {
+                        stmt.addBeforeComment(comments);
+                    }
+                    return stmt;
                 } else if (token == Token.VIEW) {
-                    return parseCreateView();
+                    SQLStatement stmt = parseCreateView();
+
+                    if (comments != null) {
+                        stmt.addBeforeComment(comments);
+                    }
+                    return stmt;
                 } else if (token == Token.TRIGGER) {
                     lexer.reset(markBp, markChar, Token.CREATE);
-                    return parseCreateTrigger();
+                    SQLStatement stmt = parseCreateTrigger();
+
+                    if (comments != null) {
+                        stmt.addBeforeComment(comments);
+                    }
+                    return stmt;
                 } else if (token == Token.PROCEDURE) {
                     SQLCreateProcedureStatement stmt = parseCreateProcedure();
                     stmt.setCreate(true);
+
+                    if (comments != null) {
+                        stmt.addBeforeComment(comments);
+                    }
                     return stmt;
                 } else if (lexer.identifierEquals(FnvHash.Constants.BITMAP)) {
                     lexer.reset(markBp, markChar, Token.CREATE);
-                    return parseCreateIndex(true);
+                    SQLStatement stmt = parseCreateIndex(true);
+
+                    if (comments != null) {
+                        stmt.addBeforeComment(comments);
+                    }
+                    return stmt;
                 } else if (lexer.identifierEquals(FnvHash.Constants.MATERIALIZED)) {
                     lexer.reset(markBp, markChar, Token.CREATE);
-                    return parseCreateMaterializedView();
+                    SQLStatement stmt = parseCreateMaterializedView();
+
+                    if (comments != null) {
+                        stmt.addBeforeComment(comments);
+                    }
+                    return stmt;
                 } else if (lexer.identifierEquals(FnvHash.Constants.TYPE)) {
                     lexer.reset(markBp, markChar, Token.CREATE);
-                    return parseCreateType();
+                    SQLStatement stmt = parseCreateType();
+
+                    if (comments != null) {
+                        stmt.addBeforeComment(comments);
+                    }
+                    return stmt;
                 } else if (lexer.identifierEquals(FnvHash.Constants.EXTERNAL)) {
                     lexer.reset(markBp, markChar, Token.CREATE);
                     SQLCreateTableStatement createTable = parseCreateTable();
+
                     if (comments != null) {
                         createTable.addBeforeComment(comments);
-                        comments = null;
                     }
                     return createTable;
                 } else if (lexer.identifierEquals(FnvHash.Constants.TABLEGROUP)) {
                     lexer.reset(markBp, markChar, Token.CREATE);
-                    return parseCreateTableGroup();
+                    SQLStatement stmt = parseCreateTableGroup();
+
+                    if (comments != null) {
+                        stmt.addBeforeComment(comments);
+                    }
+                    return stmt;
                 } else if (lexer.identifierEquals(FnvHash.Constants.DIMENSION)) {
                     lexer.reset(markBp, markChar, Token.CREATE);
-                    return parseCreateTable();
+                    SQLStatement stmt = parseCreateTable();
+
+                    if (comments != null) {
+                        stmt.addBeforeComment(comments);
+                    }
+                    return stmt;
                 } else if (lexer.identifierEquals(FnvHash.Constants.ROLE)) {
                     lexer.reset(markBp, markChar, Token.CREATE);
-                    return parseCreateRole();
+                    SQLStatement stmt = parseCreateRole();
+
+                    if (comments != null) {
+                        stmt.addBeforeComment(comments);
+                    }
+                    return stmt;
                 } else if (lexer.identifierEquals(Constants.RESOURCE)) {
                     lexer.reset(markBp, markChar, Token.CREATE);
-                    return parseCreateResourceGroup();
+                    SQLStatement stmt = parseCreateResourceGroup();
+
+                    if (comments != null) {
+                        stmt.addBeforeComment(comments);
+                    }
+                    return stmt;
                 } else if (lexer.token() == FOREIGN) {
                     lexer.reset(markBp, markChar, Token.CREATE);
-                    return parseCreateTable();
+                    SQLStatement stmt = parseCreateTable();
+
+                    if (comments != null) {
+                        stmt.addBeforeComment(comments);
+                    }
+                    return stmt;
                 }
 
                 throw new ParserException("TODO " + lexer.info());
@@ -4025,6 +4175,12 @@ public class SQLStatementParser extends SQLParser {
     }
 
     public SQLStatement parseCreateSequence(boolean acceptCreate) {
+
+        List<String> comments = null;
+        if (lexer.isKeepComments() && lexer.hasComment()) {
+            comments = lexer.readAndResetComments();
+        }
+
         if (acceptCreate) {
             accept(Token.CREATE);
         }
@@ -4140,10 +4296,19 @@ public class SQLStatementParser extends SQLParser {
 
         }
 
+        if (comments != null) {
+            stmt.addBeforeComment(comments);
+        }
         return stmt;
     }
 
     public SQLCreateIndexStatement parseCreateIndex(boolean acceptCreate) {
+
+        List<String> comments = null;
+        if (lexer.isKeepComments() && lexer.hasComment()) {
+            comments = lexer.readAndResetComments();
+        }
+
         if (acceptCreate) {
             accept(Token.CREATE);
         }
@@ -4190,6 +4355,9 @@ public class SQLStatementParser extends SQLParser {
         }
         accept(Token.RPAREN);
 
+        if (comments != null) {
+            stmt.addBeforeComment(comments);
+        }
         return stmt;
     }
 
