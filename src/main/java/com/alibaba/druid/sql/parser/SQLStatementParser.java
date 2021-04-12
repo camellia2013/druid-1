@@ -833,8 +833,6 @@ public class SQLStatementParser extends SQLParser {
         if (beforeComments != null) {
             stmt.addBeforeComment(beforeComments);
         }
-
-
         return stmt;
     }
 
@@ -2845,6 +2843,11 @@ public class SQLStatementParser extends SQLParser {
     }
 
     public SQLStatement parseTruncate() {
+        List<String> comments = null;
+        if (lexer.isKeepComments() && lexer.hasComment()) {
+            comments = lexer.readAndResetComments();
+        }
+
         accept(Token.TRUNCATE);
         if (lexer.token == Token.TABLE) {
             lexer.nextToken();
@@ -2989,6 +2992,9 @@ public class SQLStatementParser extends SQLParser {
             break;
         }
 
+        if (comments != null) {
+            stmt.addBeforeComment(comments);
+        }
         return stmt;
     }
 

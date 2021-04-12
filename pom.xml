@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.alibaba</groupId>
 	<artifactId>druid</artifactId>
-	<version>1.2.5</version>
+	<version>1.2.5-99tech-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>druid</name>
 	<description>A JDBC datasource implementation.</description>
@@ -134,22 +134,22 @@
 				</configuration>
 			</plugin>
 
-			<plugin>
-				<artifactId>maven-gpg-plugin</artifactId>
-				<version>1.6</version>
-				<configuration>
-					<skip>${gpg.skip}</skip>
-				</configuration>
-				<executions>
-					<execution>
-						<id>sign-artifacts</id>
-						<phase>verify</phase>
-						<goals>
-							<goal>sign</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
+<!--			<plugin>-->
+<!--				<artifactId>maven-gpg-plugin</artifactId>-->
+<!--				<version>1.6</version>-->
+<!--				<configuration>-->
+<!--					<skip>${gpg.skip}</skip>-->
+<!--				</configuration>-->
+<!--				<executions>-->
+<!--					<execution>-->
+<!--						<id>sign-artifacts</id>-->
+<!--						<phase>verify</phase>-->
+<!--						<goals>-->
+<!--							<goal>sign</goal>-->
+<!--						</goals>-->
+<!--					</execution>-->
+<!--				</executions>-->
+<!--			</plugin>-->
 
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -236,25 +236,25 @@
 				</dependency>
 			</dependencies>
 		</profile>
-		<profile>
-			<id>mac-profile</id>
-			<activation>
-				<activeByDefault>false</activeByDefault>
-				<file>
-					<exists>${java.home}/../Classes/jconsole.jar</exists>
-				</file>
-			</activation>
-			<dependencies>
-				<dependency>
-					<groupId>com.alibaba</groupId>
-					<artifactId>jconsole</artifactId>
-					<version>1.6.0</version>
-					<scope>system</scope>
-					<systemPath>${java.home}/../Classes/jconsole.jar</systemPath>
-					<optional>true</optional>
-				</dependency>
-			</dependencies>
-		</profile>
+<!--		<profile>-->
+<!--			<id>mac-profile</id>-->
+<!--			<activation>-->
+<!--				<activeByDefault>false</activeByDefault>-->
+<!--				<file>-->
+<!--					<exists>${java.home}/../Classes/jconsole.jar</exists>-->
+<!--				</file>-->
+<!--			</activation>-->
+<!--			<dependencies>-->
+<!--				<dependency>-->
+<!--					<groupId>com.alibaba</groupId>-->
+<!--					<artifactId>jconsole</artifactId>-->
+<!--					<version>1.6.0</version>-->
+<!--					<scope>system</scope>-->
+<!--					<systemPath>${java.home}/../Classes/jconsole.jar</systemPath>-->
+<!--					<optional>true</optional>-->
+<!--				</dependency>-->
+<!--			</dependencies>-->
+<!--		</profile>-->
 
 		<profile>
 			<id>mac-profile-oracle-jdk</id>
@@ -284,41 +284,41 @@
 				</dependency>
 			</dependencies>
 		</profile>
-		<profile>
-			<id>travis</id>
-			<activation>
-				<property>
-					<name>env.TRAVIS</name>
-					<value>true</value>
-				</property>
-			</activation>
-			<build>
-				<plugins>
-					<plugin>
-						<!-- for codecov.io -->
-						<!-- config example: https://github.com/codecov/example-java -->
-						<!-- plugin docs: http://eclemma.org/jacoco/trunk/doc/ -->
-						<groupId>org.jacoco</groupId>
-						<artifactId>jacoco-maven-plugin</artifactId>
-						<version>0.7.6.201602180812</version>
-						<executions>
-							<execution>
-								<goals>
-									<goal>prepare-agent</goal>
-								</goals>
-							</execution>
-							<execution>
-								<id>report</id>
-								<phase>test</phase>
-								<goals>
-									<goal>report</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
+<!--		<profile>-->
+<!--			<id>travis</id>-->
+<!--			<activation>-->
+<!--				<property>-->
+<!--					<name>env.TRAVIS</name>-->
+<!--					<value>true</value>-->
+<!--				</property>-->
+<!--			</activation>-->
+<!--			<build>-->
+<!--				<plugins>-->
+<!--					<plugin>-->
+<!--						&lt;!&ndash; for codecov.io &ndash;&gt;-->
+<!--						&lt;!&ndash; config example: https://github.com/codecov/example-java &ndash;&gt;-->
+<!--						&lt;!&ndash; plugin docs: http://eclemma.org/jacoco/trunk/doc/ &ndash;&gt;-->
+<!--						<groupId>org.jacoco</groupId>-->
+<!--						<artifactId>jacoco-maven-plugin</artifactId>-->
+<!--						<version>0.7.6.201602180812</version>-->
+<!--						<executions>-->
+<!--							<execution>-->
+<!--								<goals>-->
+<!--									<goal>prepare-agent</goal>-->
+<!--								</goals>-->
+<!--							</execution>-->
+<!--							<execution>-->
+<!--								<id>report</id>-->
+<!--								<phase>test</phase>-->
+<!--								<goals>-->
+<!--									<goal>report</goal>-->
+<!--								</goals>-->
+<!--							</execution>-->
+<!--						</executions>-->
+<!--					</plugin>-->
+<!--				</plugins>-->
+<!--			</build>-->
+<!--		</profile>-->
 	</profiles>
 
 	<dependencies>

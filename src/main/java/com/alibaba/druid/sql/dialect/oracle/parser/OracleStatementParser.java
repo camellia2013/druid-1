@@ -519,12 +519,20 @@ public class OracleStatementParser extends SQLStatementParser {
             }
 
             if (lexer.token() == Token.DROP) {
+                List<String> comments = null;
+                if (lexer.isKeepComments() && lexer.hasComment()) {
+                    comments = lexer.readAndResetComments();
+                }
+
                 Lexer.SavePoint savePoint = lexer.mark();
                 lexer.nextToken();
 
                 if (lexer.token() == Token.TABLE) {
                     SQLDropTableStatement stmt = parseDropTable(false);
                     stmt.setParent(parent);
+                    if (comments != null) {
+                        stmt.addBeforeComment(comments);
+                    }
                     statementList.add(stmt);
                     continue;
                 }
@@ -548,6 +556,9 @@ public class OracleStatementParser extends SQLStatementParser {
 
                         stmt.setName(this.exprParser.name());
 
+                        if (comments != null) {
+                            stmt.addBeforeComment(comments);
+                        }
                         statementList.add(stmt);
                         continue;
                     }
@@ -556,6 +567,9 @@ public class OracleStatementParser extends SQLStatementParser {
                 if (lexer.token() == Token.INDEX) {
                     SQLStatement stmt = parseDropIndex();
                     stmt.setParent(parent);
+                    if (comments != null) {
+                        stmt.addBeforeComment(comments);
+                    }
                     statementList.add(stmt);
                     continue;
                 }
@@ -563,6 +577,9 @@ public class OracleStatementParser extends SQLStatementParser {
                 if (lexer.token() == Token.VIEW) {
                     SQLStatement stmt = parseDropView(false);
                     stmt.setParent(parent);
+                    if (comments != null) {
+                        stmt.addBeforeComment(comments);
+                    }
                     statementList.add(stmt);
                     continue;
                 }
@@ -570,6 +587,9 @@ public class OracleStatementParser extends SQLStatementParser {
                 if (lexer.token() == Token.SEQUENCE) {
                     SQLDropSequenceStatement stmt = parseDropSequence(false);
                     stmt.setParent(parent);
+                    if (comments != null) {
+                        stmt.addBeforeComment(comments);
+                    }
                     statementList.add(stmt);
                     continue;
                 }
@@ -577,6 +597,9 @@ public class OracleStatementParser extends SQLStatementParser {
                 if (lexer.token() == Token.TRIGGER) {
                     SQLDropTriggerStatement stmt = parseDropTrigger(false);
                     stmt.setParent(parent);
+                    if (comments != null) {
+                        stmt.addBeforeComment(comments);
+                    }
                     statementList.add(stmt);
                     continue;
                 }
@@ -584,6 +607,9 @@ public class OracleStatementParser extends SQLStatementParser {
                 if (lexer.token() == Token.USER) {
                     SQLDropUserStatement stmt = parseDropUser();
                     stmt.setParent(parent);
+                    if (comments != null) {
+                        stmt.addBeforeComment(comments);
+                    }
                     statementList.add(stmt);
                     continue;
                 }
@@ -591,6 +617,9 @@ public class OracleStatementParser extends SQLStatementParser {
                 if (lexer.token() == Token.PROCEDURE) {
                     SQLDropProcedureStatement stmt = parseDropProcedure(false);
                     stmt.setParent(parent);
+                    if (comments != null) {
+                        stmt.addBeforeComment(comments);
+                    }
                     statementList.add(stmt);
                     continue;
                 }
@@ -600,6 +629,9 @@ public class OracleStatementParser extends SQLStatementParser {
 
                     SQLStatement stmt = parseDropSynonym();
                     stmt.setParent(parent);
+                    if (comments != null) {
+                        stmt.addBeforeComment(comments);
+                    }
                     statementList.add(stmt);
                     continue;
                 }
@@ -609,6 +641,9 @@ public class OracleStatementParser extends SQLStatementParser {
 
                     SQLStatement stmt = parseDropType();
                     stmt.setParent(parent);
+                    if (comments != null) {
+                        stmt.addBeforeComment(comments);
+                    }
                     statementList.add(stmt);
                     continue;
                 }
@@ -618,6 +653,9 @@ public class OracleStatementParser extends SQLStatementParser {
 
                     SQLStatement stmt = parseDropMaterializedView();
                     stmt.setParent(parent);
+                    if (comments != null) {
+                        stmt.addBeforeComment(comments);
+                    }
                     statementList.add(stmt);
                     continue;
                 }
