@@ -5096,6 +5096,11 @@ public class SQLStatementParser extends SQLParser {
     }
 
     public SQLStatement parseMerge() {
+        List<String> comments = null;
+        if (lexer.isKeepComments() && lexer.hasComment()) {
+            comments = lexer.readAndResetComments();
+        }
+
         accept(Token.MERGE);
 
         SQLMergeStatement stmt = new SQLMergeStatement();
@@ -5254,6 +5259,9 @@ public class SQLStatementParser extends SQLParser {
         SQLErrorLoggingClause errorClause = parseErrorLoggingClause();
         stmt.setErrorLoggingClause(errorClause);
 
+        if (comments != null) {
+            stmt.addBeforeComment(comments);
+        }
         return stmt;
     }
 

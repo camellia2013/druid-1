@@ -1899,6 +1899,11 @@ public class OracleStatementParser extends SQLStatementParser {
     }
 
     public SQLStatement parseBlock() {
+        List<String> comments = null;
+        if (lexer.isKeepComments() && lexer.hasComment()) {
+            comments = lexer.readAndResetComments();
+        }
+
         SQLBlockStatement block = new SQLBlockStatement();
         block.setDbType(DbType.oracle);
 
@@ -1940,6 +1945,10 @@ public class OracleStatementParser extends SQLStatementParser {
         Token token = lexer.token();
 
         if (token == Token.EOF) {
+
+            if (comments != null) {
+                block.addBeforeComment(comments);
+            }
             return block;
         }
 
@@ -1950,6 +1959,10 @@ public class OracleStatementParser extends SQLStatementParser {
         }
         accept(Token.SEMI);
 
+
+        if (comments != null) {
+            block.addBeforeComment(comments);
+        }
         return block;
     }
 
